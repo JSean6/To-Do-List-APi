@@ -5,48 +5,63 @@ const PORT = 3000;
 // Middleware
 app.use(express.json());
 
-// Mock data
-let books = [
-  { id: 1, title: 'Atomic Habits', author: 'James Clear', year: 2018 },
-  { id: 2, title: 'The Alchemist', author: 'Paulo Coelho', year: 1988 }
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the To-Do List API!');
+});
+
+// Dummy in-memory database
+let todos = [
+  { id: 1, task: 'Buy groceries', completed: false },
+  { id: 2, task: 'Clean the house', completed: true }
 ];
 
-// Routes
-app.get('/', (req, res) => {
-    res.send('Welcome to the Book API!');
-  });
-  
-app.get('/api/books', (req, res) => {
-  res.json(books);
+// GET all todos
+app.get('/api/todos', (req, res) => {
+  res.json(todos);
 });
 
-app.get('/api/books/:id', (req, res) => {
-  const book = books.find(b => b.id == req.params.id);
-  if (!book) return res.status(404).json({ message: 'Book not found' });
-  res.json(book);
+// GET a single todo by ID
+app.get('/api/todos/:id', (req, res) => {
+  const todo = todos.find(t => t.id == req.params.id);
+  if (!todo) return res.status(404).json({ message: 'To-do not found' });
+  res.json(todo);
 });
 
-app.post('/api/books', (req, res) => {
-  const newBook = { id: books.length + 1, ...req.body };
-  books.push(newBook);
-  res.status(201).json(newBook);
+// POST a new todo
+app.post('/api/todos', (req, res) => {
+  const newTodo = {
+    id: todos.length + 1,
+    task: req.body.task,
+    completed: req.body.completed || false
+  };
+  todos.push(newTodo);
+  res.status(201).json(newTodo);
 });
 
-app.put('/api/books/:id', (req, res) => {
-  const index = books.findIndex(b => b.id == req.params.id);
-  if (index === -1) return res.status(404).json({ message: 'Book not found' });
-  books[index] = { id: parseInt(req.params.id), ...req.body };
-  res.json(books[index]);
+// PUT to update a todo
+app.put('/api/todos/:id', (req, res) => {
+  const index = todos.findIndex(t => t.id == req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'To-do not found' });
+
+  todos[index] = {
+    id: parseInt(req.params.id),
+    task: req.body.task,
+    completed: req.body.completed
+  };
+  res.json(todos[index]);
 });
 
-app.delete('/api/books/:id', (req, res) => {
-  const index = books.findIndex(b => b.id == req.params.id);
-  if (index === -1) return res.status(404).json({ message: 'Book not found' });
-  books.splice(index, 1);
+// DELETE a todo
+app.delete('/api/todos/:id', (req, res) => {
+  const index = todos.findIndex(t => t.id == req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'To-do not found' });
+
+  todos.splice(index, 1);
   res.status(204).send();
 });
 
-// Start server
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`To-Do List API running on http://localhost:${PORT}`);
 });
